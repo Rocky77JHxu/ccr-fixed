@@ -11,7 +11,8 @@ import {
   isServiceRunning,
   savePid,
 } from "./utils/processCheck";
-import { CONFIG_FILE } from "./constants";
+import { CONFIG_FILE, PORT_FILE } from "./constants";
+import { writeFileSync } from "fs";
 import { createStream } from 'rotating-file-stream';
 import { HOME_DIR } from "./constants";
 import { sessionUsageCache } from "./utils/cache";
@@ -87,6 +88,13 @@ async function run(options: RunOptions = {}) {
 
   // Save the PID of the background process
   savePid(process.pid);
+  
+  // 保存实际使用的端口到文件，供客户端读取
+  try {
+    writeFileSync(PORT_FILE, String(port), 'utf-8');
+  } catch (error: any) {
+    console.error(`Failed to write port file: ${error.message}`);
+  }
 
   // Handle SIGINT (Ctrl+C) to clean up PID file
   process.on("SIGINT", () => {

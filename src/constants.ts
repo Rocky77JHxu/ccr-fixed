@@ -13,9 +13,10 @@ export const setConfigFile = (customPath: string) => {
 
 export const PLUGINS_DIR = path.join(HOME_DIR, "plugins");
 
-// PID文件和引用计数文件路径，支持基于配置文件的实例隔离
+// PID文件、引用计数文件和端口文件路径，支持基于配置文件的实例隔离
 export let PID_FILE = path.join(HOME_DIR, '.claude-code-router.pid');
 export let REFERENCE_COUNT_FILE = path.join(HOME_DIR, "reference-count.txt");
+export let PORT_FILE = path.join(HOME_DIR, '.claude-code-router.port');
 
 // 更新实例特定文件路径的函数
 export const setInstanceFiles = (configPath: string) => {
@@ -24,6 +25,7 @@ export const setInstanceFiles = (configPath: string) => {
   
   PID_FILE = path.join(configDir, `.claude-code-router-${configName}.pid`);
   REFERENCE_COUNT_FILE = path.join(configDir, `reference-count-${configName}.txt`);
+  PORT_FILE = path.join(configDir, `.claude-code-router-${configName}.port`);
 };
 
 // Claude projects directory

@@ -230,7 +230,9 @@ ccr --config config-fast.json code "Fix this bug"
 ccr --config config-powerful.json code "Design architecture"
 ```
 
-**⚠️ Important**: Each configuration file **must specify a unique `PORT`** to avoid conflicts.
+**💡 Port Configuration**: 
+- **Option 1 (Recommended)**: Specify unique `PORT` in each config file for explicit control
+- **Option 2**: Omit `PORT` for automatic port assignment (system will auto-detect and communicate via port files)
 
 📖 For detailed multi-instance usage, see [Multi-Instance Guide](MULTI_INSTANCE.md).
 

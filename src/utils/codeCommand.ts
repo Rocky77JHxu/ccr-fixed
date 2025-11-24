@@ -9,7 +9,9 @@ import { quote } from 'shell-quote';
 import minimist from "minimist";
 import { createEnvVariables } from "./createEnvVariables";
 import fs from "node:fs/promises";
+import { existsSync, readFileSync } from "fs";
 import JSON5 from "json5";
+import { PORT_FILE } from "../constants";
 
 
 // 直接从指定配置文件读取配置（避免全局状态干扰）
@@ -26,7 +28,20 @@ const readSpecificConfigFile = async (configPath: string) => {
 
 // 基于指定配置创建环境变量
 const createSpecificEnvVariables = async (config: any) => {
-  const port = config.PORT || 3456;
+  // 尝试从端口文件读取实际使用的端口
+  let port = config.PORT || 3456;
+  try {
+    if (existsSync(PORT_FILE)) {
+      const portStr = readFileSync(PORT_FILE, 'utf-8').trim();
+      const portFromFile = parseInt(portStr, 10);
+      if (!isNaN(portFromFile) && portFromFile > 0) {
+        port = portFromFile;
+      }
+    }
+  } catch (error) {
+    // 如果读取失败，使用config中的端口或默认端口
+  }
+  
   const apiKey = config.APIKEY || "test";
 
   return {
