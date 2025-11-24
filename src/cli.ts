@@ -28,6 +28,33 @@ if (argv.config) {
   console.log(`Using custom config file: ${argv.config}`);
 }
 
+// 重新构建 claude 命令的完整参数列表（排除 ccr 特有的参数）
+function buildClaudeArgs(argv: any): string[] {
+  const args: string[] = [];
+  
+  // 添加位置参数（跳过命令名 'code'）
+  if (argv._ && argv._.length > 1) {
+    args.push(...argv._.slice(1));
+  }
+  
+  // 添加选项参数（排除 config）
+  for (const [key, value] of Object.entries(argv)) {
+    if (key === '_' || key === 'config') continue;
+    
+    const prefix = key.length === 1 ? '-' : '--';
+    if (value === true) {
+      // 布尔标志
+      args.push(`${prefix}${key}`);
+    } else if (value !== false && value !== undefined) {
+      // 带值的选项
+      args.push(`${prefix}${key}`);
+      args.push(String(value));
+    }
+  }
+  
+  return args;
+}
+
 const HELP_TEXT = `
 Usage: ccr [options] [command]
 
@@ -174,8 +201,8 @@ async function main() {
         startProcess.unref();
 
         if (await waitForService()) {
-          // 获取code命令的参数，排除--config相关参数
-          const codeArgs = argv._.slice(1); // 跳过'code'命令本身
+          // 重新构建完整的参数列表，包括所有选项
+          const codeArgs = buildClaudeArgs(argv);
           // 传递配置文件路径，确保使用正确的配置
           executeCodeCommand(codeArgs, argv.config);
         } else {
@@ -185,8 +212,8 @@ async function main() {
           process.exit(1);
         }
       } else {
-        // 获取code命令的参数，排除--config相关参数  
-        const codeArgs = argv._.slice(1); // 跳过'code'命令本身
+        // 重新构建完整的参数列表，包括所有选项
+        const codeArgs = buildClaudeArgs(argv);
         // 传递配置文件路径，确保使用正确的配置
         executeCodeCommand(codeArgs, argv.config);
       }
