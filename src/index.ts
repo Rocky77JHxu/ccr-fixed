@@ -2,7 +2,7 @@ import { existsSync } from "fs";
 import { writeFile } from "fs/promises";
 import { homedir } from "os";
 import path, { join } from "path";
-import { initConfig, initDir, cleanupLogFiles, findAvailablePort } from "./utils";
+import { initConfig, initSpecificConfig, initDir, cleanupLogFiles, findAvailablePort } from "./utils";
 import { createServer } from "./server";
 import { router } from "./utils/router";
 import { apiKeyAuth } from "./middleware/auth";
@@ -47,6 +47,7 @@ async function initializeClaudeConfig() {
 
 interface RunOptions {
   port?: number;
+  configPath?: string;
 }
 
 async function run(options: RunOptions = {}) {
@@ -61,7 +62,8 @@ async function run(options: RunOptions = {}) {
   await initDir();
   // Clean up old log files, keeping only the 10 most recent ones
   await cleanupLogFiles();
-  const config = await initConfig();
+  // 根据是否提供configPath选择配置初始化方式
+  const config = options.configPath ? await initSpecificConfig(options.configPath) : await initConfig();
 
 
   let HOST = config.HOST || "127.0.0.1";

@@ -8,12 +8,43 @@ import {
 import { quote } from 'shell-quote';
 import minimist from "minimist";
 import { createEnvVariables } from "./createEnvVariables";
+import fs from "node:fs/promises";
+import JSON5 from "json5";
 
 
-export async function executeCodeCommand(args: string[] = []) {
-  // Set environment variables using shared function
-  const config = await readConfigFile();
-  const env = await createEnvVariables();
+// 直接从指定配置文件读取配置（避免全局状态干扰）
+const readSpecificConfigFile = async (configPath: string) => {
+  try {
+    const config = await fs.readFile(configPath, "utf-8");
+    const parsedConfig = JSON5.parse(config);
+    return parsedConfig; // 简化版本，不使用插值
+  } catch (error: any) {
+    console.error(`Failed to read config file at ${configPath}: ${error.message}`);
+    process.exit(1);
+  }
+};
+
+// 基于指定配置创建环境变量
+const createSpecificEnvVariables = async (config: any) => {
+  const port = config.PORT || 3456;
+  const apiKey = config.APIKEY || "test";
+
+  return {
+    ANTHROPIC_AUTH_TOKEN: apiKey,
+    ANTHROPIC_API_KEY: "",
+    ANTHROPIC_BASE_URL: `http://127.0.0.1:${port}`,
+    NO_PROXY: "127.0.0.1",
+    DISABLE_TELEMETRY: "true",
+    DISABLE_COST_WARNINGS: "true",
+    API_TIMEOUT_MS: String(config.API_TIMEOUT_MS ?? 600000),
+    CLAUDE_CODE_USE_BEDROCK: undefined,
+  };
+};
+
+export async function executeCodeCommand(args: string[] = [], configPath?: string) {
+  // 根据是否提供configPath选择读取方式
+  const config = configPath ? await readSpecificConfigFile(configPath) : await readConfigFile();
+  const env = configPath ? await createSpecificEnvVariables(config) : await createEnvVariables();
   const settingsFlag = {
     env
   };

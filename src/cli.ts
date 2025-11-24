@@ -12,14 +12,27 @@ import { runModelSelector } from "./utils/modelSelector"; // ADD THIS LINE
 import { activateCommand } from "./utils/activateCommand";
 import { version } from "../package.json";
 import { spawn, exec } from "child_process";
-import { PID_FILE, REFERENCE_COUNT_FILE } from "./constants";
+import { PID_FILE, REFERENCE_COUNT_FILE, setConfigFile, setInstanceFiles } from "./constants";
 import fs, { existsSync, readFileSync } from "fs";
 import { join } from "path";
+import minimist from "minimist";
 
-const command = process.argv[2];
+// 解析命令行参数，支持--config选项
+const argv = minimist(process.argv.slice(2));
+const command = argv._[0];
+
+// 如果指定了--config参数，设置自定义配置文件路径
+if (argv.config) {
+  setConfigFile(argv.config);
+  setInstanceFiles(argv.config); // 同时更新实例文件路径
+  console.log(`Using custom config file: ${argv.config}`);
+}
 
 const HELP_TEXT = `
-Usage: ccr [command]
+Usage: ccr [options] [command]
+
+Options:
+  --config <path>   Use custom config file (default: ~/.claude-code-router/config.json)
 
 Commands:
   start         Start server
@@ -34,11 +47,12 @@ Commands:
   -v, version   Show version information
   -h, help      Show help information
 
-Example:
-  ccr start
-  ccr code "Write a Hello World"
-  ccr model
-  eval "$(ccr activate)"  # Set environment variables globally
+Examples:
+  ccr start                                    # Use default config
+  ccr --config ./task1.json start             # Use custom config for task1
+  ccr --config ./gpt4.json code "Hello"       # Use GPT-4 config for coding
+  ccr --config ./claude.json code "Review"    # Use Claude config for review
+  eval "$(ccr activate)"                       # Set environment variables globally
   ccr ui
 `;
 
@@ -66,7 +80,8 @@ async function main() {
   const isRunning = await isServiceRunning()
   switch (command) {
     case "start":
-      run();
+      // 传递配置文件路径给run函数
+      run({ configPath: argv.config });
       break;
     case "stop":
       try {
@@ -127,7 +142,14 @@ async function main() {
       if (!isRunning) {
         console.log("Service not running, starting service...");
         const cliPath = join(__dirname, "cli.js");
-        const startProcess = spawn("node", [cliPath, "start"], {
+        
+        // 构建启动参数，传递config参数给子进程
+        const startArgs = ["start"];
+        if (argv.config) {
+          startArgs.unshift("--config", argv.config);
+        }
+        
+        const startProcess = spawn("node", [cliPath, ...startArgs], {
           detached: true,
           stdio: "ignore",
         });
@@ -152,9 +174,10 @@ async function main() {
         startProcess.unref();
 
         if (await waitForService()) {
-          // Join all code arguments into a single string to preserve spaces within quotes
-          const codeArgs = process.argv.slice(3);
-          executeCodeCommand(codeArgs);
+          // 获取code命令的参数，排除--config相关参数
+          const codeArgs = argv._.slice(1); // 跳过'code'命令本身
+          // 传递配置文件路径，确保使用正确的配置
+          executeCodeCommand(codeArgs, argv.config);
         } else {
           console.error(
             "Service startup timeout, please manually run `ccr start` to start the service"
@@ -162,9 +185,10 @@ async function main() {
           process.exit(1);
         }
       } else {
-        // Join all code arguments into a single string to preserve spaces within quotes
-        const codeArgs = process.argv.slice(3);
-        executeCodeCommand(codeArgs);
+        // 获取code命令的参数，排除--config相关参数  
+        const codeArgs = argv._.slice(1); // 跳过'code'命令本身
+        // 传递配置文件路径，确保使用正确的配置
+        executeCodeCommand(codeArgs, argv.config);
       }
       break;
     case "ui":
@@ -172,7 +196,14 @@ async function main() {
       if (!isRunning) {
         console.log("Service not running, starting service...");
         const cliPath = join(__dirname, "cli.js");
-        const startProcess = spawn("node", [cliPath, "start"], {
+        
+        // 构建启动参数，传递config参数给子进程
+        const startArgs = ["start"];
+        if (argv.config) {
+          startArgs.unshift("--config", argv.config);
+        }
+        
+        const startProcess = spawn("node", [cliPath, ...startArgs], {
           detached: true,
           stdio: "ignore",
         });

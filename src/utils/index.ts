@@ -49,11 +49,20 @@ export const initDir = async () => {
 const isPortAvailable = async (port: number): Promise<boolean> => {
   return new Promise((resolve) => {
     const server = createServer();
-    server.listen(port, () => {
-      server.once('close', () => resolve(true));
-      server.close();
+    
+    server.once('listening', () => {
+      server.close(() => resolve(true));
     });
-    server.on('error', () => resolve(false));
+    
+    server.once('error', (err: any) => {
+      if (err.code === 'EADDRINUSE') {
+        resolve(false);
+      } else {
+        resolve(false);
+      }
+    });
+    
+    server.listen(port, '127.0.0.1');
   });
 };
 
@@ -199,6 +208,14 @@ export const initConfig = async () => {
   const config = await readConfigFile();
   Object.assign(process.env, config);
   return config;
+};
+
+// 直接从指定配置文件初始化配置（避免全局状态干扰）
+export const initSpecificConfig = async (configPath: string) => {
+  const config = await fs.readFile(configPath, "utf-8");
+  const parsedConfig = JSON5.parse(config);
+  Object.assign(process.env, parsedConfig);
+  return parsedConfig;
 };
 
 // 导出日志清理函数
