@@ -24,6 +24,7 @@
 - **Request/Response Transformation**: Customize requests and responses for different providers using transformers.
 - **Dynamic Model Switching**: Switch models on-the-fly within Claude Code using the `/model` command.
 - **CLI Model Management**: Manage models and providers directly from the terminal with `ccr model`.
+- **Multi-Instance Support**: Run multiple instances with different configurations simultaneously using `--config` parameter.
 - **GitHub Actions Integration**: Trigger Claude Code tasks in your GitHub workflows.
 - **Plugin System**: Extend functionality with custom transformers.
 
@@ -216,6 +217,22 @@ ccr code
 > ```shell
 > ccr restart
 > ```
+
+#### Multi-Instance Support
+
+Run multiple instances with different configurations simultaneously:
+
+```shell
+# Instance 1: Simple tasks with fast model
+ccr --config config-fast.json code "Fix this bug"
+
+# Instance 2: Complex tasks with powerful model
+ccr --config config-powerful.json code "Design architecture"
+```
+
+**⚠️ Important**: Each configuration file **must specify a unique `PORT`** to avoid conflicts.
+
+📖 For detailed multi-instance usage, see [Multi-Instance Guide](MULTI_INSTANCE.md).
 
 ### 4. UI Mode
 
