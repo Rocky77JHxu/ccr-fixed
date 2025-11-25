@@ -8,6 +8,22 @@
 2. 支持了多Config功能：可指定多个配置文件启动多个实例，每个实例使用不同的配置文件；
 3. 修复了原本 CCR 在非交互式运行下的一些问题。
 
+## 安装方式
+
+首先，你需要先确保安装 `Claude Code`，参考[官方文档](https://docs.anthropic.com/en/docs/claude-code/quickstart):
+
+```bash
+npm install -g @anthropic-ai/claude-code
+```
+
+然后，安装 CCR Fixed:
+
+```bash
+npm install -g @rocky77jhxu/claude-code-router-fixed
+```
+
+如果遇到问题，欢迎提交 Issue。
+
 ## 多租户问题概述
 
 该问题主要解决在多租户的服务器环境上，如果两个用户同时启动 CCR，则会导致端口冲突和计数文件冲突的问题。
