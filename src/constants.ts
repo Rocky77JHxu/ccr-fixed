@@ -18,14 +18,27 @@ export let PID_FILE = path.join(HOME_DIR, '.claude-code-router.pid');
 export let REFERENCE_COUNT_FILE = path.join(HOME_DIR, "reference-count.txt");
 export let PORT_FILE = path.join(HOME_DIR, '.claude-code-router.port');
 
+// 实例文件存放目录
+const INSTANCES_DIR = path.join(HOME_DIR, "instances");
+
 // 更新实例特定文件路径的函数
 export const setInstanceFiles = (configPath: string) => {
-  const configDir = path.dirname(configPath);
-  const configName = path.basename(configPath, '.json');
+  // 使用配置文件的绝对路径作为唯一标识
+  const absoluteConfigPath = path.resolve(configPath);
+  // 将路径转换为安全的文件名（替换特殊字符）
+  const safeConfigName = absoluteConfigPath
+    .replace(/[/\\:]/g, '_')
+    .replace(/^_+/, '');
   
-  PID_FILE = path.join(configDir, `.claude-code-router-${configName}.pid`);
-  REFERENCE_COUNT_FILE = path.join(configDir, `reference-count-${configName}.txt`);
-  PORT_FILE = path.join(configDir, `.claude-code-router-${configName}.port`);
+  // 确保实例目录存在
+  const fs = require('fs');
+  if (!fs.existsSync(INSTANCES_DIR)) {
+    fs.mkdirSync(INSTANCES_DIR, { recursive: true });
+  }
+  
+  PID_FILE = path.join(INSTANCES_DIR, `${safeConfigName}.pid`);
+  REFERENCE_COUNT_FILE = path.join(INSTANCES_DIR, `${safeConfigName}.count`);
+  PORT_FILE = path.join(INSTANCES_DIR, `${safeConfigName}.port`);
 };
 
 // Claude projects directory
