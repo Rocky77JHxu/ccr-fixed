@@ -9,7 +9,7 @@ console.log('Building Claude Code Router...');
 try {
   // Build the main CLI application
   console.log('Building CLI application...');
-  execSync('esbuild src/cli.ts --bundle --platform=node --outfile=dist/cli.js', { stdio: 'inherit' });
+  execSync('esbuild src/cli.ts --bundle --platform=node --external:undici --outfile=dist/cli.js', { stdio: 'inherit' });
   
   // Copy the tiktoken WASM file
   console.log('Copying tiktoken WASM file...');

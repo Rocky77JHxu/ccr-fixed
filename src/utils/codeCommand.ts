@@ -42,13 +42,15 @@ const createSpecificEnvVariables = async (config: any) => {
     // 如果读取失败，使用config中的端口或默认端口
   }
   
+  const host = config.HOST || "127.0.0.1";
   const apiKey = config.APIKEY || "test";
+  const noProxy = host === "127.0.0.1" ? "127.0.0.1" : `127.0.0.1,${host}`;
 
   return {
     ANTHROPIC_AUTH_TOKEN: apiKey,
     ANTHROPIC_API_KEY: "",
-    ANTHROPIC_BASE_URL: `http://127.0.0.1:${port}`,
-    NO_PROXY: "127.0.0.1",
+    ANTHROPIC_BASE_URL: `http://${host}:${port}`,
+    NO_PROXY: noProxy,
     DISABLE_TELEMETRY: "true",
     DISABLE_COST_WARNINGS: "true",
     API_TIMEOUT_MS: String(config.API_TIMEOUT_MS ?? 600000),

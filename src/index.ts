@@ -24,6 +24,14 @@ import { IAgent } from "./agents/type";
 import agentsManager from "./agents";
 import { EventEmitter } from "node:events";
 
+// Setup proxy support: make native fetch respect http_proxy/https_proxy/no_proxy env vars
+try {
+  const { EnvHttpProxyAgent, setGlobalDispatcher } = require("undici");
+  setGlobalDispatcher(new EnvHttpProxyAgent());
+} catch {
+  // undici not available, proxy env vars won't be respected by native fetch
+}
+
 const event = new EventEmitter()
 
 async function initializeClaudeConfig() {
@@ -290,7 +298,7 @@ async function run(options: RunOptions = {}) {
                   role: 'user',
                   content: toolMessages
                 })
-                const response = await fetch(`http://127.0.0.1:${config.PORT || 3456}/v1/messages`, {
+                const response = await fetch(`http://${HOST}:${config.PORT || 3456}/v1/messages`, {
                   method: "POST",
                   headers: {
                     'x-api-key': config.APIKEY,

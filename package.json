@@ -1,6 +1,6 @@
 {
   "name": "@rocky77jhxu/claude-code-router-fixed",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "Use Claude Code without an Anthropics account and route it to another LLM provider (Fixed version with multi-instance support)",
   "bin": {
     "ccr": "dist/cli.js"
@@ -31,6 +31,7 @@
     "rotating-file-stream": "^3.2.7",
     "shell-quote": "^1.8.3",
     "tiktoken": "^1.0.21",
+    "undici": "^7.10.0",
     "uuid": "^11.1.0"
   },
   "devDependencies": {
