@@ -104,6 +104,14 @@ async function waitForService(
 }
 
 async function main() {
+  if (argv.v || argv.version) {
+    console.log(`claude-code-router version: ${version}`);
+    return;
+  }
+  if (argv.h || argv.help) {
+    console.log(HELP_TEXT);
+    return;
+  }
   const isRunning = await isServiceRunning()
   switch (command) {
     case "start":
